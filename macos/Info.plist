@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>io.ttsread.app</string>
+    <key>CFBundleName</key>
+    <string>TTS Read</string>
+    <key>CFBundleDisplayName</key>
+    <string>TTS Read</string>
+    <key>CFBundleVersion</key>
+    <string>0.1.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleExecutable</key>
+    <string>tts-read</string>
+
+    <!-- Hide from Dock; appear only in menu bar -->
+    <key>LSUIElement</key>
+    <true/>
+
+    <!-- Required for global keyboard monitoring (rdev) -->
+    <key>NSAppleEventsUsageDescription</key>
+    <string>TTS Read needs accessibility access to listen for the Alt+R hotkey and read your selected text.</string>
+
+    <key>LSMinimumSystemVersion</key>
+    <string>11.0</string>
+
+    <key>NSHighResolutionCapable</key>
+    <true/>
+</dict>
+</plist>

@@ -1,0 +1,120 @@
+[package]
+name = "tts-read"
+version = "0.1.5"
+edition = "2024"
+description = "Select text, press Alt+R, hear it read aloud. Fast, local, natural."
+license = "MIT"
+keywords = ["tts", "text-to-speech", "accessibility", "reader", "hotkey"]
+categories = ["accessibility", "command-line-utilities"]
+authors = ["TTS Read contributors"]
+
+[[bin]]
+name = "tts-read"
+path = "src/main.rs"
+
+[[example]]
+name = "gen_icon"
+path = "tools/gen_icon.rs"
+
+[dependencies]
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dirs = "5"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+parking_lot = "0.12"
+
+# Global hotkey with key suppression (unstable_grab = rdev::grab API)
+rdev = { version = "0.5", features = ["unstable_grab"] }
+
+# Clipboard read/write
+arboard = "3"
+
+# Platform native TTS (WinRT on Windows, AVFoundation on macOS) — fallback
+tts = "0"
+
+# Microsoft Edge Neural TTS — primary engine, very natural voices, free (uses
+# Edge browser's public Read Aloud endpoint over WebSocket).
+msedge-tts = "0.3"
+
+# Audio playback (decodes MP3 stream from Edge TTS, plays to default device)
+rodio = "0.22"
+
+# System tray icon + menu
+tray-icon = "0.20"
+
+# 2D rendering for programmatic tray icon
+tiny-skia = "0.11"
+
+# Autostart on user login
+auto-launch = "0.5"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_HiDpi",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_System_LibraryLoader",
+    "Win32_System_DataExchange",
+] }
+# UI Automation — primary capture method. Reads selected text directly from
+# the focused element via COM, no keyboard or clipboard simulation needed.
+uiautomation = "0.25"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+tao = "0.30"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+opt-level = 1
+
+[package.metadata.packager]
+product-name = "TTS Read"
+identifier = "io.ttsread.app"
+description = "Select text, press Alt+R, hear it read aloud."
+long-description = "Lightweight local text-to-speech reader. Runs offline, lives in your system tray."
+category = "Utility"
+icons = ["assets/icon.png"]
+before-each-package-command = "cargo build --release"
+out-dir = "dist"
+
+[package.metadata.packager.windows]
+allow-downgrades = true
+
+[package.metadata.packager.macos]
+minimum-system-version = "11.0"
+info-plist-path = "macos/Info.plist"
+
+[package.metadata.packager.nsis]
+installer-mode = "currentUser"
+appdata-paths = ["$LOCALAPPDATA/TTSRead"]
+preinstall-section = '''
+Section "Update existing install" PreUpdate
+  DetailPrint "Stopping any running TTS Read instance..."
+  nsExec::Exec 'taskkill /F /IM tts-read.exe /T'
+  Sleep 500
+  ReadRegStr $R0 SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}" "UninstallString"
+  ${If} $R0 != ""
+    StrCpy $R1 $R0 1
+    ${If} $R1 == '"'
+      StrCpy $R0 $R0 "" 1
+      StrCpy $R1 $R0 "" -1
+      ${If} $R1 == '"'
+        StrCpy $R0 $R0 -1
+      ${EndIf}
+    ${EndIf}
+    ${GetParent} "$R0" $R2
+    ExecWait '"$R0" /S _?=$R2'
+    Delete "$R0"
+  ${EndIf}
+SectionEnd
+'''
