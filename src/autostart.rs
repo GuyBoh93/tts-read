@@ -12,10 +12,11 @@ pub fn sync(enabled: bool) -> Result<()> {
         .build()?;
 
     if enabled {
-        if !launcher.is_enabled()? {
-            launcher.enable()?;
-            tracing::info!("autostart enabled");
-        }
+        // Always re-register so the Run entry tracks the current exe location.
+        // Without this, moving or reinstalling the binary leaves a stale path
+        // and the app silently fails to start on boot.
+        launcher.enable()?;
+        tracing::info!("autostart synced to {exe_str}");
     } else if launcher.is_enabled()? {
         launcher.disable()?;
         tracing::info!("autostart disabled");
