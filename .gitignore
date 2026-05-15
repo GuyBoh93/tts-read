@@ -1,0 +1,19 @@
+# Rust build output
+/target
+
+# Packager output (installers / DMGs)
+/dist
+
+# Build logs
+build.log
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Backup files
+*.bak
+*~
